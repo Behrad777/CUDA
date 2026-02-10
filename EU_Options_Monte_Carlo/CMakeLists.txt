@@ -1,5 +1,14 @@
 cmake_minimum_required(VERSION 3.18)
 
+# Force GCC/G++ 12 for both C++ and CUDA host compilation if available.
+# Can be overridden by -DCMAKE_CXX_COMPILER / -DCMAKE_CUDA_HOST_COMPILER.
+if (NOT CMAKE_CXX_COMPILER AND EXISTS "/usr/bin/g++-12")
+    set(CMAKE_CXX_COMPILER "/usr/bin/g++-12" CACHE FILEPATH "C++ compiler" FORCE)
+endif()
+if (NOT CMAKE_CUDA_HOST_COMPILER AND EXISTS "/usr/bin/g++-12")
+    set(CMAKE_CUDA_HOST_COMPILER "/usr/bin/g++-12" CACHE FILEPATH "CUDA host compiler" FORCE)
+endif()
+
 project(monte_carlo_cuda LANGUAGES CXX CUDA)
 
 # --- Language standards ---
@@ -14,6 +23,7 @@ set(CMAKE_CUDA_SEPARABLE_COMPILATION ON)
 # --- Executable ---
 add_executable(monte_carlo
     src/main.cpp
+    src/cpu_benchmark.cpp
     src/cuda/kernels.cu
     src/cuda/rng_curand.cu
 )
