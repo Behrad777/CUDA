@@ -75,20 +75,11 @@ int main()
     cuda_check(cudaDeviceSynchronize(), "cudaDeviceSynchronize after warmup");
 
     // 7) Timed kernel-only launch
-    cudaEvent_t start_evt, stop_evt;
-    cuda_check(cudaEventCreate(&start_evt), "cudaEventCreate start");
-    cuda_check(cudaEventCreate(&stop_evt), "cudaEventCreate stop");
 
-    cuda_check(cudaEventRecord(start_evt), "cudaEventRecord start");
     launch_monte_carlo(d_payoffs, d_states, NUM_PATHS);
     cuda_check(cudaGetLastError(), "monte_carlo_kernel launch (timed)");
-    cuda_check(cudaEventRecord(stop_evt), "cudaEventRecord stop");
-    cuda_check(cudaEventSynchronize(stop_evt), "cudaEventSynchronize stop");
 
     float kernel_ms = 0.0f;
-    cuda_check(cudaEventElapsedTime(&kernel_ms, start_evt, stop_evt), "cudaEventElapsedTime");
-    cuda_check(cudaEventDestroy(start_evt), "cudaEventDestroy start");
-    cuda_check(cudaEventDestroy(stop_evt), "cudaEventDestroy stop");
 
     // 8) Copy payoffs back (not timed as part of kernel-only)
     std::vector<float> h_payoffs(NUM_PATHS);
@@ -106,19 +97,6 @@ int main()
     // 10) Cleanup
     rng_free_states(d_states);
     cuda_check(cudaFree(d_payoffs), "cudaFree(d_payoffs)");
-
-    std::cout << "NUM_PATHS      : " << NUM_PATHS << "\n";
-    std::cout << "threads/block  : " << THREADS_PER_BLOCK << "\n";
-    std::cout << "blocks         : " << blocks << "\n";
-    std::cout << "num_states     : " << num_states << "\n";
-    std::cout << "CPU price      : " << cpu_price << "\n";
-    std::cout << "GPU price      : " << option_price << "\n";
-    std::cout << "CPU time (ms)  : " << cpu_ms << "\n";
-    std::cout << "CPU loop (ms)  : " << cpu_loop_ms << "\n";
-    std::cout << "GPU kernel (ms): " << kernel_ms << "\n";
-    if (kernel_ms > 0.0f) {
-        std::cout << "Speedup        : " << (cpu_loop_ms / static_cast<double>(kernel_ms)) << "x\n";
-    }
 
     return 0;
 }
