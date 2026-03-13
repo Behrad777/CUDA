@@ -52,7 +52,6 @@ int main()
     float* d_payoffs = nullptr;
     cuda_check(cudaMalloc(&d_payoffs, NUM_PATHS * sizeof(float)), "cudaMalloc(d_payoffs)");
 
-    // 4) Compute the launch grid the same way your launch_monte_carlo does
     const int blocks = (NUM_PATHS + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
     const int num_states = blocks * THREADS_PER_BLOCK;
 
